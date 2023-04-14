@@ -1,4 +1,5 @@
-﻿using EPiServer.Globalization;
+﻿using EPiServer.DataAbstraction.Internal;
+using EPiServer.Globalization;
 using Foundation.Infrastructure.Cms;
 using System.Globalization;
 
@@ -52,7 +53,23 @@ namespace Foundation.Infrastructure.Commerce.Markets
                 _cookieService.Set(LanguageCookie, chosenLanguage);
             }
         }
-        public virtual IEnumerable<CultureInfo> GetAvailableLanguages() => CurrentMarket.Languages;
+
+        public virtual IEnumerable<CultureInfo> GetAvailableLanguages()
+        {
+            var languageList = new List<CultureInfo>();
+
+            //=> CurrentMarket.Languages;
+            var activeLanguages = ServiceLocator.Current.GetInstance<ILanguageBranchRepository>().ListEnabled();
+
+            foreach (var language in activeLanguages)
+            {
+                languageList.Add(language.Culture);
+            }
+
+            return languageList;
+        }
+
+
 
         public virtual CultureInfo GetCurrentLanguage()
         {

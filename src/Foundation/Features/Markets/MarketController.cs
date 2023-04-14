@@ -1,6 +1,7 @@
 ﻿using Foundation.Features.Checkout.Services;
 using Mediachase.Commerce.Markets;
 using Newtonsoft.Json;
+using System.Globalization;
 
 namespace Foundation.Features.Markets
 {
@@ -54,9 +55,15 @@ namespace Foundation.Features.Markets
                 _currencyService.SetCurrentCurrency(currentMarket.DefaultCurrency);
             }
 
-            _languageService.SetRoutedContent(_contentRouteHelper.Content, currentMarket.DefaultLanguage.Name);
+            var httpAccessor = ServiceLocator.Current.GetInstance<IHttpContextAccessor>();
 
-            var returnUrl = _urlResolver.GetUrl(Request, contentLink, currentMarket.DefaultLanguage.Name);
+            var request = httpAccessor.HttpContext?.Request;
+
+            var currentLanguage = request?.Cookies["Language"] ?? CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+
+            _languageService.SetRoutedContent(_contentRouteHelper.Content, currentLanguage);
+
+            var returnUrl = _urlResolver.GetUrl(Request, contentLink, currentLanguage);
             return new ContentResult
             {
                 Content = JsonConvert.SerializeObject(new { returnUrl }),
